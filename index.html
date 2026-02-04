@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borang Fotostate Sekolah Seni Malaysia Sarawak</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons for nice SVG icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .paper {
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            max-width: 210mm; /* A4 Width */
+            min-height: 297mm; /* A4 Height */
+            margin: 20px auto;
+            padding: 40px;
+            position: relative;
+        }
+
+        /* Signature Canvas Styles */
+        canvas {
+            border: 1px dashed #cbd5e1;
+            background-color: #f8fafc;
+            cursor: crosshair;
+            width: 100%;
+            height: 100px;
+            touch-action: none;
+        }
+
+        /* Print Styles - Optimized for Single A4 Page */
+        @media print {
+            @page {
+                margin: 0.5cm;
+                size: A4;
+            }
+            body {
+                background-color: white;
+                -webkit-print-color-adjust: exact;
+                margin: 0;
+                padding: 0;
+            }
+            .paper {
+                box-shadow: none;
+                margin: 0;
+                padding: 10px !important; /* Reduce padding significantly */
+                width: 100%;
+                max-width: none;
+                min-height: auto; /* Allow height to shrink */
+            }
+            .no-print {
+                display: none !important;
+            }
+            input, textarea, select {
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                resize: none;
+                font-size: 11pt; /* Ensure legible font size */
+            }
+            /* Hide date picker icon specifically in print mode */
+            input[type="date"]::-webkit-calendar-picker-indicator,
+            input[type="date"]::-webkit-inner-spin-button {
+                display: none !important;
+                -webkit-appearance: none !important;
+            }
+            
+            canvas {
+                border: none !important;
+                background-color: transparent !important;
+                height: 80px !important; /* Reduce signature height for print */
+            }
+            /* Compact layout overrides */
+            .header-logo {
+                height: 4rem !important; /* Smaller logo */
+                margin-bottom: 0.5rem !important;
+            }
+            .header-title h1 {
+                font-size: 1.25rem !important;
+            }
+            .header-title h2 {
+                font-size: 1rem !important;
+            }
+            .section-box {
+                margin-bottom: 1rem !important;
+                margin-top: 1rem !important;
+            }
+            .section-header {
+                padding: 4px 8px !important;
+                font-size: 10pt !important;
+            }
+            .label-col {
+                padding: 4px 8px !important; /* Tighter rows */
+                font-size: 10pt;
+            }
+            .input-col {
+                padding: 4px 8px !important;
+            }
+            /* Ensure placeholders don't show on print */
+            ::placeholder {
+                color: transparent;
+            }
+        }
+
+        .form-row {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .form-row:last-child {
+            border-bottom: none;
+        }
+        .label-col {
+            width: 35%;
+            background-color: #f9fafb;
+            padding: 12px;
+            font-weight: 500;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+        }
+        .input-col {
+            width: 65%;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .form-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .form-input:focus {
+            border-color: #3b82f6;
+            outline: none;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Control Bar (Hidden when printing) -->
+    <div class="no-print fixed top-0 left-0 right-0 bg-white border-b border-gray-200 p-2 md:p-4 flex flex-col md:flex-row justify-between items-center z-50 shadow-sm gap-3">
+        <h1 class="text-sm md:text-lg font-bold text-gray-800 hidden lg:block">Sistem Borang Digital</h1>
+        
+        <div class="flex flex-wrap justify-center gap-2 w-full md:w-auto">
+            <!-- Whatsapp Buttons -->
+            <button onclick="sendToWhatsapp('601169224490')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg font-medium shadow transition flex items-center gap-2 text-sm">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                Hantar ke PKA 1
+            </button>
+            <button onclick="sendToWhatsapp('60194699384')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg font-medium shadow transition flex items-center gap-2 text-sm">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                Hantar ke PKA 2
+            </button>
+
+            <div class="w-px h-8 bg-gray-300 mx-1 hidden md:block"></div>
+
+            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow transition flex items-center gap-2 text-sm">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                Cetak / PDF
+            </button>
+            <button onclick="resetForm()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 text-sm">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                Reset
+            </button>
+        </div>
+    </div>
+
+    <!-- Padding for fixed header -->
+    <div class="h-32 md:h-20 no-print"></div>
+
+    <!-- A4 Paper Container -->
+    <div class="paper" id="borang">
+        
+        <!-- Header with Logo -->
+        <div class="text-center mb-8 border-b-2 border-black pb-6 header-title">
+            <div class="flex flex-col items-center justify-center">
+                <img src="https://i.postimg.cc/HkXVxsPN/SENI.jpg" alt="Logo Sekolah Seni Malaysia Sarawak" class="h-28 w-auto mb-4 object-contain header-logo">
+                <h1 class="text-2xl font-bold uppercase tracking-wide leading-tight">Sekolah Seni Malaysia Sarawak</h1>
+                <h2 class="text-xl font-bold uppercase tracking-widest mt-1 text-gray-800">Borang Fotostate</h2>
+            </div>
+        </div>
+
+        <!-- Section 1: Pemohon -->
+        <div class="mb-8 border border-gray-400 rounded-sm section-box">
+            <div class="bg-gray-100 p-3 border-b border-gray-400 font-bold text-lg section-header">
+                Diisi oleh Pemohon :
+            </div>
+
+            <!-- Nama -->
+            <div class="form-row">
+                <div class="label-col">Nama</div>
+                <div class="input-col text-center px-2 font-bold">:</div>
+                <div class="input-col flex-grow">
+                    <input type="text" id="nama" class="form-input" placeholder="Masukkan nama pemohon">
+                </div>
+            </div>
+
+            <!-- Mata Pelajaran / Kelas -->
+            <div class="form-row">
+                <div class="label-col">Mata Pelajaran / Kelas</div>
+                <div class="input-col text-center px-2 font-bold">:</div>
+                <div class="input-col flex-grow">
+                    <input type="text" id="subjek" class="form-input" placeholder="Contoh: Matematik / 5 Bestari">
+                </div>
+            </div>
+
+            <!-- Tarikh Diperlukan -->
+            <div class="form-row">
+                <div class="label-col">Tarikh diperlukan</div>
+                <div class="input-col text-center px-2 font-bold">:</div>
+                <div class="input-col flex-grow">
+                    <input type="date" id="tarikh" class="form-input">
+                </div>
+            </div>
+
+            <!-- Bilangan Set & Muka Surat (Split Row) -->
+            <div class="form-row flex-wrap md:flex-nowrap">
+                <div class="w-full md:w-1/2 flex border-b md:border-b-0 md:border-r border-gray-200">
+                    <div class="label-col" style="width: 50%;">Bilangan set dicetak</div>
+                    <div class="input-col text-center px-2 font-bold">:</div>
+                    <div class="input-col flex-grow">
+                        <input type="number" id="bil_set" class="form-input" placeholder="0">
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2 flex">
+                    <div class="label-col border-l-0 md:border-l border-gray-200" style="width: 50%;">Jumlah Muka Surat</div>
+                    <div class="input-col text-center px-2 font-bold">:</div>
+                    <div class="input-col flex-grow">
+                        <input type="number" id="jum_ms" class="form-input" placeholder="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tujuan -->
+            <div class="form-row">
+                <div class="label-col">Tujuan</div>
+                <div class="input-col text-center px-2 font-bold">:</div>
+                <div class="input-col flex-grow">
+                    <input type="text" id="tujuan" class="form-input" placeholder="Contoh: Ujian Bulanan / Latihan">
+                </div>
+            </div>
+
+            <!-- Cetakan / Arahan -->
+            <div class="form-row">
+                <div class="label-col">Cetakan / Arahan</div>
+                <div class="input-col text-center px-2 font-bold">:</div>
+                <div class="input-col flex-grow">
+                    <textarea id="arahan" class="form-input" rows="2" placeholder="Contoh: Depan belakang, Stapler bucu..."></textarea>
+                </div>
+            </div>
+
+            <!-- Tandatangan Pemohon -->
+            <div class="form-row">
+                <div class="label-col h-auto">Tandatangan Pemohon</div>
+                <div class="input-col text-center px-2 font-bold">:</div>
+                <div class="input-col flex-grow flex flex-col">
+                    <canvas id="sig-applicant" class="rounded"></canvas>
+                    <div class="no-print mt-1 text-right">
+                        <button onclick="clearCanvas('sig-applicant')" class="text-xs text-red-500 hover:text-red-700 underline">Padam Tandatangan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Pembantu Tadbir -->
+        <div class="mt-12 mb-8 border border-gray-400 rounded-sm section-box">
+            <div class="bg-gray-100 p-3 border-b border-gray-400 font-bold text-lg section-header">
+                Diisi oleh Pembantu Tadbir sebelum bahan dicetak :
+            </div>
+
+            <!-- Jumlah Helai Kertas -->
+            <div class="form-row">
+                <div class="label-col">Jumlah helai kertas yang diguna</div>
+                <div class="input-col text-center px-2 font-bold">:</div>
+                <div class="input-col flex-grow">
+                    <input type="number" class="form-input" placeholder="Jumlah helai">
+                </div>
+            </div>
+
+            <!-- Bahan Dikembalikan -->
+            <div class="form-row">
+                <div class="label-col">Bahan yang sudah dicetak dikembalikan pada</div>
+                <div class="input-col text-center px-2 font-bold">:</div>
+                <div class="input-col flex-grow">
+                    <input type="date" class="form-input">
+                </div>
+            </div>
+
+            <!-- Tandatangan Pembantu Tadbir -->
+            <div class="form-row">
+                <div class="label-col h-auto">Tandatangan Pembantu Tadbir</div>
+                <div class="input-col text-center px-2 font-bold">:</div>
+                <div class="input-col flex-grow flex flex-col">
+                    <canvas id="sig-admin" class="rounded"></canvas>
+                    <div class="no-print mt-1 text-right">
+                        <button onclick="clearCanvas('sig-admin')" class="text-xs text-red-500 hover:text-red-700 underline">Padam Tandatangan</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disahkan Oleh -->
+            <div class="form-row">
+                <div class="label-col">Disah oleh Pengetua/GPK 1, HEM, SENI & KK/KPT</div>
+                <div class="input-col text-center px-2 font-bold">:</div>
+                <div class="input-col flex-grow">
+                    <input type="text" class="form-input" placeholder="Nama / Cop Pengesahan">
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Note -->
+        <div class="text-center text-xs text-gray-500 mt-8 no-print">
+            <p>Borang ini dijana secara digital untuk Sekolah Seni Malaysia Sarawak.</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // WhatsApp Sending Logic
+        function sendToWhatsapp(phone) {
+            // Get values from inputs
+            const nama = document.getElementById('nama').value || '(Tiada Nama)';
+            const subjek = document.getElementById('subjek').value || '-';
+            
+            // Format Date to DD/MM/YYYY if selected
+            let tarikhRaw = document.getElementById('tarikh').value;
+            let tarikh = '-';
+            if (tarikhRaw) {
+                const d = new Date(tarikhRaw);
+                tarikh = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+            }
+
+            const set = document.getElementById('bil_set').value || '-';
+            const ms = document.getElementById('jum_ms').value || '-';
+            const tujuan = document.getElementById('tujuan').value || '-';
+            const arahan = document.getElementById('arahan').value || '-';
+
+            // Construct Message
+            const message = `*PERMOHONAN FOTOSTATE BARU*%0A` +
+                `--------------------------------%0A` +
+                `*Nama:* ${encodeURIComponent(nama)}%0A` +
+                `*Subjek/Kelas:* ${encodeURIComponent(subjek)}%0A` +
+                `*Tarikh Diperlukan:* ${encodeURIComponent(tarikh)}%0A` +
+                `*Bil. Set:* ${encodeURIComponent(set)}%0A` +
+                `*Jum. Muka Surat:* ${encodeURIComponent(ms)}%0A` +
+                `*Tujuan:* ${encodeURIComponent(tujuan)}%0A` +
+                `*Arahan/Catatan:* ${encodeURIComponent(arahan)}`;
+
+            // Open WhatsApp
+            window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+        }
+
+        // Signature Logic
+        function initSignature(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            let drawing = false;
+
+            // Set canvas size based on display size
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#000';
+            }
+            
+            // Initial resize
+            resizeCanvas();
+            // Resize on window change
+            window.addEventListener('resize', resizeCanvas);
+
+            // Mouse Events
+            canvas.addEventListener('mousedown', (e) => {
+                drawing = true;
+                ctx.beginPath();
+                const rect = canvas.getBoundingClientRect();
+                ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            });
+
+            canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
+            canvas.addEventListener('mousemove', (e) => {
+                if (!drawing) return;
+                const rect = canvas.getBoundingClientRect();
+                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                ctx.stroke();
+            });
+
+            // Touch Events (for mobile/tablet)
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                drawing = true;
+                ctx.beginPath();
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+            });
+
+            canvas.addEventListener('touchend', () => { drawing = false; ctx.beginPath(); });
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!drawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+                ctx.stroke();
+            });
+        }
+
+        // Initialize both signature pads
+        window.onload = function() {
+            initSignature('sig-applicant');
+            initSignature('sig-admin');
+        };
+
+        // Clear Canvas function
+        function clearCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Reset Form
+        function resetForm() {
+            if(confirm("Adakah anda pasti mahu mengosongkan borang ini?")) {
+                document.querySelectorAll('input, textarea').forEach(input => input.value = '');
+                clearCanvas('sig-applicant');
+                clearCanvas('sig-admin');
+            }
+        }
+    </script>
+</body>
+</html>
